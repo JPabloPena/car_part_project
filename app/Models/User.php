@@ -2,50 +2,49 @@
 
 namespace App\Models;
 
-use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable;
-
     /**
      * The attributes that are mass assignable.
      *
      * @var array
      */
-    //attributes id, name, email, password, user, address, age, city, country, telephone, balance, created_at, updated_at
+    //attributes id, name, email, password, user, address, age, city, country, telephone, balance, role, created_at, updated_at
     protected $fillable = [
         'name',
         'email',
         'password',
-        'user',
         'address',
         'age',
         'city',
         'country',
         'telephone',
         'balance',
+        'role'
     ];
     public static function validateUser(Request $request)
     {
         $request->validate([
-            "name" => "required",
-            "user" => "required",
-            "password" => "required",
-            "email" => "required",
-            "address" => "required",
-            "age" => "required|numeric",
-            'city' => "required",
-            'country' => "required",
-            'telephone' => "required",
-            'balance' => "required",
-
+            'name' => 'required|min:2',
+            'password' => 'required|min:4|confirmed',
+            'email' => 'required',
         ]);
-        User::create($request->only(["name","user","password","email","address","age","city","country","telephone","balance"]));
+    }
+
+    public static function validateUpdateUser(Request $request)
+    {
+        $request->validate([
+            'name' => 'required',
+            'address' => 'min:5|nullable',
+            'email' => 'required',
+            'city' => 'min:2|nullable',
+            'country' => 'min:2|nullable',
+            'telephone' => 'min:7|nullable'
+        ]);
     }
 
     /**
@@ -143,7 +142,7 @@ class User extends Authenticatable
 
     public function setCountry($country)
     {
-        $this->attributes['age'] = $country;
+        $this->attributes['country'] = $country;
     }
 
     public function getTelephone()
@@ -161,7 +160,7 @@ class User extends Authenticatable
         return $this->attributes['balance'];
     }
 
-    public function setBlance($balance)
+    public function setBalance($balance)
     {
         $this->attributes['balance'] = $balance;
     }
@@ -176,20 +175,8 @@ class User extends Authenticatable
         $this->attributes['role'] = $role;
     }
 
-    public function getOrderId()
+    public function reviews()
     {
-        return $this->attributes['order_id'];
+        return $this->hasMany(Review::class);
     }
-
-    public function setOrderId($order_id)
-    {
-        $this->attributes['order_id'] = $order_id;
-    }
-
-    public function order()
-    {
-        return $this->hasMany(Order::class);
-    }
-
-
 }

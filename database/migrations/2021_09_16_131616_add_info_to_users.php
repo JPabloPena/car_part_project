@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AddRoleToUsers extends Migration
+class AddInfoToUsers extends Migration
 {
     /**
      * Run the migrations.
@@ -15,13 +15,12 @@ class AddRoleToUsers extends Migration
     {
         Schema::table('users', function (Blueprint $table) {
             $table->string('role')->default('client');
-            $table-> string('user');
-            $table-> string('address');
-            $table-> integer('age');
-            $table-> string('city');
-            $table-> string('country');
-            $table-> string('telephone');
-            $table-> integer('balance');
+            $table-> string('address')->nullable();
+            $table-> integer('age')->nullable();
+            $table-> string('city')->nullable();
+            $table-> string('country')->nullable();
+            $table-> string('telephone')->nullable();
+            $table-> integer('balance')->default(1000);
         });
     }
 
@@ -34,7 +33,6 @@ class AddRoleToUsers extends Migration
     {
         Schema::table('users', function (Blueprint $table) {
             $table->dropColumn(['role']);
-            $table->dropColumn(['user']);
             $table->dropColumn(['address']);
             $table->dropColumn(['age']);
             $table->dropColumn(['city']);

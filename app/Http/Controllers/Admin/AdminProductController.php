@@ -3,20 +3,44 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+
 use App\Models\Product;
+use App\Models\ToolLoan;
+use App\Models\User;
+
 use App\Interfaces\ImageStorage;
 
 class AdminProductController extends Controller
 {
 
+    public function list()
+    {
+        $data = []; //to be sent to the view
+
+        $data["title"] = "Product List";
+        $data["products"] = Product::all();
+        $data["loanedTools"] = ToolLoan::all();
+
+        if (User::where('id', Auth::id())->first()->getRole() == 'admin') {
+            return view('admin.product.list')->with("data", $data);
+        } else {
+            return redirect()->route('home.index')->with('error', __('auth.unauthorized'));
+        }
+    }
+
     public function create()
     {
         $data = []; //to be sent to the view
-        $data["title"] = "Create product";
-        $data["products"] = Product::all();
-
-        return view('admin.product.create')->with("data", $data);
+        $data["title"] = "Create Product";
+       
+        if (User::where('id', Auth::id())->first()->getRole() == 'admin') {
+            return view('admin.product.create')->with("data", $data);
+        } else {
+            return redirect()->route('home.index')->with('error', __('auth.unauthorized'));
+        }
     }
 
     public function save(Request $request)
@@ -24,18 +48,51 @@ class AdminProductController extends Controller
         Product::validateProduct($request);
         $storeInterface = app(ImageStorage::class);
         $storeInterface->store($request);
-
-        return back()->with('success', __('product.controller.created'));
+        if ($request->image) {
+            $image = $request->image;
+            $imagePath = "";
+            $imagePath = "/storage/". $request->name .".".$image->getClientOriginalExtension();
+        } else {
+            $imagePath = "";
+        }
+        $newProduct = new Product;
+        $newProduct->setName($request->name);
+        $newProduct->setDescription($request->description);
+        $newProduct->setSalePrice($request->salePrice);
+        $newProduct->setCost($request->cost);
+        $newProduct->setCategory($request->category);
+        $newProduct->setBrand($request->brand) ;
+        $newProduct->setWarranty($request->warranty) ;
+        $newProduct->setQuantity($request->quantity) ;
+        $newProduct->setImagePath($imagePath) ;
+        $newProduct->save();
+        
+        //Product::create($request->only(["name","description","salePrice","cost","category","brand","warranty", "quantity", $imagePath]));
+        return redirect()->route('admin.product.create')->with('success', __('product.controller.created'));
     }
 
-    public function list()
+    public function update(Request $request, $id)
     {
-        $data = []; //to be sent to the view
-
-        $data["title"] = "List of products";
-        $data["products"] = Product::all();
-
-        return view('admin.product.list')->with("data", $data);
+        Product::validateProduct($request);
+        $storeInterface = app(ImageStorage::class);
+        $storeInterface->store($request);
+        $productToUpdate = Product::findOrFail($id);
+        if ($request->image) {
+            $image = $request->image;
+            $imagePath = "";
+            $imagePath = "/storage/". $request->name .".".$image->getClientOriginalExtension();
+            $productToUpdate->setImagePath($imagePath);
+        }
+        $productToUpdate->setName($request->name);
+        $productToUpdate->setDescription($request->description);
+        $productToUpdate->setSalePrice($request->salePrice);
+        $productToUpdate->setCost($request->cost);
+        $productToUpdate->setCategory($request->category);
+        $productToUpdate->setBrand($request->brand) ;
+        $productToUpdate->setWarranty($request->warranty);
+        $productToUpdate->setQuantity($request->quantity);
+        $productToUpdate->save();
+        return redirect()->route('admin.product.list')->with('success', __('product.controller.updated'));
     }
 
     public function destroy($id)
@@ -44,30 +101,5 @@ class AdminProductController extends Controller
         $product->delete();
 
         return back()->with('success', __('product.controller.removed'));
-    }
-
-    public function edit($id)
-    {
-        $data = []; //to be sent to the view
-        $product = Product::findOrFail($id);
-
-        $data["title"] = $product->getName();
-        $data["product"] = $product;
-        
-        return view('admin.product.edit')->with("data", $data);
-    }
-
-    public function update(Request $request, $id)
-    {
-        $product = Product::findOrFail($id);
-        $product->name = $request->input('name');
-        $product->description = $request->input('description');
-        $product->salePrice = $request->input('salePrice');
-        $product->category = $request->input('category');
-        $product->brand = $request->input('brand');
-        $product->warranty = $request->input('warranty');
-        $product->save();
-
-        return view('admin.product.list')->with('success', __('product.controller.created'));
     }
 }

@@ -3,9 +3,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+
 use App\Models\User;
-use App\Interfaces\ImageStorage;
+use App\Models\ToolLoan;
+
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class AdminUserController extends Controller
 {
@@ -13,42 +16,40 @@ class AdminUserController extends Controller
     {
         $data = []; //to be sent to the view
 
-        $data["title"] = "List of users";
+        $data["title"] = "User List";
         $data["users"] = User::all();
+        $data["loanedTools"] = ToolLoan::all();
 
-        return view('admin.user.list')->with("data", $data);
-    }
-
-    public function destroy($id)
-    {
-        $User = User::findOrFail($id);
-        $User->delete();
-
-        return back()->with('success', __('User.controller.removed'));
-    }
-
-   /* public function edit($id)
-    {
-        $data = []; //to be sent to the view
-        $product = Product::findOrFail($id);
-
-        $data["title"] = $product->getName();
-        $data["product"] = $product;
-        
-        return view('admin.product.edit')->with("data", $data);
+        if (User::where('id', Auth::id())->first()->getRole() == 'admin') {
+            return view('admin.user.list')->with("data", $data);
+        } else {
+            return redirect()->route('home.index')->with('error', __('auth.unauthorized'));
+        }
     }
 
     public function update(Request $request, $id)
     {
-        $product = Product::findOrFail($id);
-        $product->name = $request->input('name');
-        $product->description = $request->input('description');
-        $product->salePrice = $request->input('salePrice');
-        $product->category = $request->input('category');
-        $product->brand = $request->input('brand');
-        $product->warranty = $request->input('warranty');
-        $product->save();
+        $userToModify = User::findOrFail($id);
+        $userToModify->setName($request->name);
+        $userToModify->setEmail($request->email);
+        $userToModify->setAddress($request->address);
+        $userToModify->setAge($request->age);
+        $userToModify->setCity($request->city);
+        $userToModify->setCountry($request->country);
+        $userToModify->setTelephone($request->telephone);
+        $userToModify->setBalance($request->balance);
+        if ($request->role) {
+            $userToModify->setRole($request->role);
+        }
+        $userToModify->save();
+        return redirect()->route('admin.user.list')->with('success', __('User.controller.updated'));
+    }
 
-        return view('admin.product.list')->with('success', __('product.controller.created'));
-    }*/
+    public function destroy($id)
+    {
+        $userToDelete = User::findOrFail($id);
+        $userToDelete->delete();
+
+        return back()->with('success', __('User.controller.removed'));
+    }
 }

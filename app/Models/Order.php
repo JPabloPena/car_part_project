@@ -45,18 +45,33 @@ class Order extends Model
         $this->attributes['total'] = $total;
     }
 
+    public function getNumberItems()
+    {
+        return $this->attributes['number_items'];
+    }
+
+    public function setNumberItems($numberItems)
+    {
+        $this->attributes['number_items'] = $numberItems;
+    }
+
     public function getUserId()
     {
         return $this->attributes['user_id'];
     }
 
-    public function setUserId($user_id)
+    public function setUserId($userId)
     {
-        $this->attributes['user_id'] = $user_id;
+        $this->attributes['user_id'] = $userId;
     }
 
     public function items()
     {
         return $this->hasMany(Item::class);
     }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    } 
 }

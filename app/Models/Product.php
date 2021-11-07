@@ -12,11 +12,12 @@ class Product extends Model
 {
     use HasFactory;
 
-    //attributes id, name, description, salePrice, category, brand, warranty, image, created_at, updated_at
+    //attributes id, name, description, sale_price, cost, category, brand, warranty, image_path, created_at, updated_at
 
     //methods validateProduct
 
-    protected $fillable = ['id','name','description','salePrice','category','brand','warranty', 'image'];
+    protected $fillable = ['name','description','sale_price','cost','category','brand','warranty', 'quantity',
+        'image_path'];
 
     public static function validateProduct(Request $request)
     {
@@ -24,28 +25,12 @@ class Product extends Model
             "name" => "required",
             "description" => "required",
             "salePrice" => "required|numeric|gt:0",
+            "cost" => "required|numeric|gt:0",
             "category" => "required",
             "brand" => "required",
             "warranty" => "required",
-            "image" => "required|image",
+            "quantity" => "required|numeric|gt:0"
         ]);
-
-        Product::create($request->only(["name","description","salePrice","category","brand","warranty", "image"]));
-    }
-
-    public static function updateProduct(Request $request)
-    {
-        $request->validate([
-            "name" => "required",
-            "description" => "required",
-            "salePrice" => "required|numeric|gt:0",
-            "category" => "required",
-            "brand" => "required",
-            "warranty" => "required",
-            "image" => "required|image",
-        ]);
-
-        Product::edit($request->only(["name","description","salePrice","category","brand","warranty", "image"]));
     }
 
     public function getId()
@@ -80,12 +65,22 @@ class Product extends Model
 
     public function getSalePrice()
     {
-        return $this->attributes['salePrice'];
+        return $this->attributes['sale_price'];
     }
 
     public function setSalePrice($salePrice)
     {
-        $this->attributes['salePrice'] = $salePrice;
+        $this->attributes['sale_price'] = $salePrice;
+    }
+
+    public function getCost()
+    {
+        return $this->attributes['cost'];
+    }
+
+    public function setCost($cost)
+    {
+        $this->attributes['cost'] = $cost;
     }
 
     public function getCategory()
@@ -117,25 +112,33 @@ class Product extends Model
     {
         $this->attributes['warranty'] = $warranty;
     }
-
-    public function getImage()
+    public function getQuantity()
     {
-        return $this->attributes['image'];
+        return $this->attributes['quantity'];
     }
 
-    public function setImage($image)
+    public function setQuantity($quantity)
     {
-        $this->attributes['image'] = $image;
+        $this->attributes['quantity'] = $quantity;
+    }
+
+    public function getImagePath()
+    {
+        return $this->attributes['image_path'];
+    }
+
+    public function setImagePath($imagePath)
+    {
+        $this->attributes['image_path'] = $imagePath;
     }
     
     public function items()
     {
         return $this->hasMany(Item::class);
     }
-    /*
+    
     public function reviews()
     {
-        return $this->hasMany(Reviews::class);
-    }*/
-    
+        return $this->hasMany(Review::class);
+    }
 }

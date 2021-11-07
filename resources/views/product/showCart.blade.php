@@ -1,22 +1,44 @@
 @extends('layouts.app')
 
 @section('content')
-
-<div class="container">
-    <div class="row row-cols-1 row-cols-md-3 g-4">
-        @foreach($data["products"] as $product)
-            <div class="col">
-                <div class="card">
-                    <img class="card-img-top" src="https://files.antena2.com/antena2/public/styles/imagen_despliegue/public/2019-04/whatsapp_image_2019-04-28_at_1.48.20_pm_0.jpeg?itok=g6od5RQE">
-                    <div class="card-body"> 
-                        <h5 class="card-title fw-bold"><a href="{{ route('product.show', $product->getId()) }}" style="color:gray">{{ $product->getId() }} - {{ $product->getName() }}</a></h5>
-                        <p class="card-text">{{ __('product.showCart.price') }} {{ $product->getSalePrice() }}</p>
-                    </div>
+<div class="container-fluid">
+    <div class="card border-secondary m-2">
+        <div class="card-header text-center">
+            @if(count($data["products"]) > 0)
+            <h1>{{ __('product.showCart.yourCart') }} {{count($data["products"])}}
+                {{ __('product.showCart.product') }}(s)
+            </h1>
+            @else
+            <h3>{{ __('product.showCart.emptyCart') }}<a href="{{route('product.list')}}">
+                    {{ __('product.showCart.here') }}</a></h3>
+            @endif
+            <h5>{{__('product.showCart.balance') }} ${{number_format($data["user"]->getBalance(),2, '.', ',')}}</h5>
+        </div>
+        <div class="card-body">
+            <div class="container text-center">
+                @foreach($data["products"] as $product)
+                <div class="row mx-auto">
+                    <a class="mx-auto" href="{{ route('product.show', $product->getId()) }}">
+                        <img style="max-height: 250px; max-width: 250px" class="rounded rounded-circle"
+                            src="{{asset($product->getImagePath())}}" alt="{{$product->getId()}}">
+                    </a>
                 </div>
+                <h5>{{$product->getName()}}</h5>
+                <h5>${{number_format($product->getSalePrice(),2, '.', ',')}}</h5>
+                <a href="{{ route('product.deleteFromCart', $product->getId()) }}"><button
+                        class="btn btn-outline-secondary">{{ __('product.showCart.deleteFromCart') }}</button></a>
+                <hr class="border-secondary">
+                @endforeach
+                @if(count($data["products"]) > 0)
+                <h3 class="text-primary">{{ __('product.showCart.total') }}
+                    ${{number_format($data["products"]->sum('sale_price'),2, '.', ',')}}</h3>
+                <p><a href="{{ route('product.buy') }}"><button
+                            class="btn btn-success">{{ __('product.showCart.buy') }}</button></a></p>
+                <p><a href="{{ route('product.deleteAllCart') }}"><button
+                            class="btn btn-danger">{{ __('product.showCart.deleteAllCart') }}</button></a></p>
+                @endif
             </div>
-        @endforeach
+        </div>
     </div>
-    <p><a href="{{ route('product.deleteAllCart') }}">{{ __('product.showCart.deleteAllCart') }}</a></p> <br/><br/>
-    <p><a href="{{ route('product.buy') }}">Buy</a></p> 
 </div>
 @endsection
